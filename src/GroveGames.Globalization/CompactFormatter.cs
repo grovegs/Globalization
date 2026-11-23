@@ -16,7 +16,7 @@ public static class CompactFormatter
     private const int FirstLetterCount = 2;
     private const int AlphabetLength = 26;
     private const int MaxLetterCount = 14;
-    private const long MaxExponent = long.MaxValue / 2L;
+    internal const long MaxExponent = long.MaxValue / 2L;
     private const double MidpointTolerance = 1e-9d;
 
     private static readonly char[] s_namedUnits = { 'K', 'M', 'B', 'T' };
@@ -146,7 +146,7 @@ public static class CompactFormatter
         return true;
     }
 
-    private static void Normalize(ref double magnitude, ref long exponent)
+    internal static void Normalize(ref double magnitude, ref long exponent)
     {
         while (magnitude >= 10d)
         {

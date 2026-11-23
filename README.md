@@ -38,6 +38,13 @@ Span<char> buffer = stackalloc char[CompactFormatter.MaxLength];
 CompactFormatter.TryFormat(12345d, NumberRounding.Floor, buffer, out var written);
 ```
 
+`CompactFormatter` and `PercentFormatter` also take a mantissa and a base-ten exponent, for values beyond the range of `double`:
+
+```csharp
+CompactFormatter.TryFormat(1.5d, 400L, NumberRounding.Nearest, buffer, out written);
+PercentFormatter.TryFormat(1.9d, 6L, buffer, out written);
+```
+
 The output does not depend on the current culture. `TryFormat` returns `false` when the destination is too small; a buffer of the formatter's `MaxLength` always fits.
 
 ## Unity
@@ -62,15 +69,7 @@ The output does not depend on the current culture. `TryFormat` returns `false` w
 
 ### Usage
 
-The formatters are in the core namespace, `GroveGames.Globalization`. With [GroveGames.Mathematics](https://github.com/grovegs/Mathematics) installed, the Unity package adds `BigNumberCompactFormatter` and `BigNumberPercentFormatter` in `GroveGames.Globalization.Unity`:
-
-```csharp
-using GroveGames.Globalization;
-using GroveGames.Globalization.Unity;
-
-Span<char> buffer = stackalloc char[BigNumberCompactFormatter.MaxLength];
-BigNumberCompactFormatter.TryFormat(balance, NumberRounding.Floor, buffer, out var written);
-```
+All formatters are in the core namespace, `GroveGames.Globalization`. The Unity package adds no types; it makes the core available to asmdefs that reference `GroveGames.Globalization.Unity`.
 
 ## Development
 
