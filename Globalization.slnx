@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src\GroveGames.Globalization\GroveGames.Globalization.csproj" />
+  <Project Path="tests\GroveGames.Globalization.Tests\GroveGames.Globalization.Tests.csproj" />
+</Solution>

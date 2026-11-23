@@ -1,0 +1,28 @@
+{
+    "name": "GroveGames.Globalization.Unity.Mathematics",
+    "rootNamespace": "GroveGames.Globalization.Unity",
+    "references": [
+        "GroveGames.Globalization.Unity",
+        "GroveGames.Mathematics.Unity"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "GroveGames.Globalization.dll",
+        "GroveGames.Mathematics.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "GROVEGAMES_MATHEMATICS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.grovegames.mathematics",
+            "expression": "0.1.0",
+            "define": "GROVEGAMES_MATHEMATICS"
+        }
+    ],
+    "noEngineReferences": true
+}
