@@ -99,6 +99,41 @@ public sealed class TextInterpolatedStringHandlerTests
     }
 
     [Fact]
+    public void Written_StackSpan_WritesTheCharacters()
+    {
+        Span<char> amount = stackalloc char[CompactFormatter.MaxLength];
+        CompactFormatter.TryFormat(12345d, NumberRounding.Floor, amount, out var length);
+
+        var text = Format($"Costs {amount.Slice(0, length)}");
+
+        Assert.Equal("Costs 12.3K", text);
+    }
+
+    [Fact]
+    public void Written_EmptyLiteralAndSpan_WritesNothing()
+    {
+        var handler = new TextInterpolatedStringHandler(0, 1);
+
+        handler.AppendLiteral(string.Empty);
+        handler.AppendFormatted(ReadOnlySpan<char>.Empty);
+
+        Assert.Equal(0, handler.Written.Length);
+        handler.Dispose();
+    }
+
+    [Fact]
+    public void Dispose_CalledTwice_DoesNotThrow()
+    {
+        var handler = new TextInterpolatedStringHandler(4, 0);
+        handler.AppendLiteral("text");
+
+        handler.Dispose();
+        handler.Dispose();
+
+        Assert.Equal(0, handler.Written.Length);
+    }
+
+    [Fact]
     public void Default_WrittenAndDispose_AreEmptyAndSafe()
     {
         var handler = default(TextInterpolatedStringHandler);
