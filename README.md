@@ -14,6 +14,7 @@ Compact numbers, percentages, durations and Roman numerals formatted without all
 - `DurationFormatter`: seconds become `01:02:05` or `1m 30s`
 - `RomanNumeralFormatter`: integers become Roman numerals
 - Every formatter has a `TryFormat` that writes into a `Span<char>` and a `Format` that returns a string
+- `TextInterpolatedStringHandler`: lets a method take `$"Stage {number}"` and read it as a span from a pooled buffer, with no string built
 
 ## .NET
 
@@ -37,6 +38,20 @@ var tier = RomanNumeralFormatter.Format(4);
 Span<char> buffer = stackalloc char[CompactFormatter.MaxLength];
 CompactFormatter.TryFormat(12345d, NumberRounding.Floor, buffer, out var written);
 ```
+
+A method that takes text can accept an interpolated string without a string being built. Read `Written`, then call `Dispose` to return the buffer:
+
+```csharp
+public void SetText(TextInterpolatedStringHandler text)
+{
+    SetText(text.Written);
+    text.Dispose();
+}
+
+label.SetText($"Reach Stage {stage}");
+```
+
+`int`, `long`, `float`, `double`, `char`, strings and spans are written without allocating on every target. Other values are written without allocating on .NET 6 and later, and through `ToString` on `netstandard2.1`.
 
 `CompactFormatter` and `PercentFormatter` also take a mantissa and a base-ten exponent, for values beyond the range of `double`:
 
