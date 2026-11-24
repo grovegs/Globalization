@@ -10,10 +10,12 @@ public ref struct TextInterpolatedStringHandler
 {
     private const int FormattedLength = 16;
 
-    private char[] _buffer;
+    private char[]? _buffer;
     private int _position;
 
     public readonly ReadOnlySpan<char> Written => _buffer.AsSpan(0, _position);
+
+    private readonly int Capacity => _buffer?.Length ?? 0;
 
     public TextInterpolatedStringHandler(int literalLength, int formattedCount)
     {
@@ -23,10 +25,10 @@ public ref struct TextInterpolatedStringHandler
 
     public void Dispose()
     {
-        if (_buffer.Length > 0)
+        if (_buffer != null)
         {
             ArrayPool<char>.Shared.Return(_buffer);
-            _buffer = Array.Empty<char>();
+            _buffer = null;
         }
 
         _position = 0;
@@ -50,7 +52,7 @@ public ref struct TextInterpolatedStringHandler
     public void AppendFormatted(char value)
     {
         EnsureCapacity(1);
-        _buffer[_position++] = value;
+        _buffer![_position++] = value;
     }
 
     public void AppendFormatted(int value)
@@ -64,7 +66,7 @@ public ref struct TextInterpolatedStringHandler
 
         while (!value.TryFormat(_buffer.AsSpan(_position), out written, format.AsSpan(), CultureInfo.InvariantCulture))
         {
-            Grow(_buffer.Length + 1);
+            Grow(Capacity + 1);
         }
 
         _position += written;
@@ -81,7 +83,7 @@ public ref struct TextInterpolatedStringHandler
 
         while (!value.TryFormat(_buffer.AsSpan(_position), out written, format.AsSpan(), CultureInfo.InvariantCulture))
         {
-            Grow(_buffer.Length + 1);
+            Grow(Capacity + 1);
         }
 
         _position += written;
@@ -98,7 +100,7 @@ public ref struct TextInterpolatedStringHandler
 
         while (!value.TryFormat(_buffer.AsSpan(_position), out written, format.AsSpan(), CultureInfo.InvariantCulture))
         {
-            Grow(_buffer.Length + 1);
+            Grow(Capacity + 1);
         }
 
         _position += written;
@@ -115,7 +117,7 @@ public ref struct TextInterpolatedStringHandler
 
         while (!value.TryFormat(_buffer.AsSpan(_position), out written, format.AsSpan(), CultureInfo.InvariantCulture))
         {
-            Grow(_buffer.Length + 1);
+            Grow(Capacity + 1);
         }
 
         _position += written;
@@ -133,7 +135,7 @@ public ref struct TextInterpolatedStringHandler
 
         while (!value.TryFormat(_buffer.AsSpan(_position), out written, format, CultureInfo.InvariantCulture))
         {
-            Grow(_buffer.Length + 1);
+            Grow(Capacity + 1);
         }
 
         _position += written;
@@ -164,7 +166,7 @@ public ref struct TextInterpolatedStringHandler
 
     private void EnsureCapacity(int count)
     {
-        if (_buffer.Length - _position < count)
+        if (Capacity - _position < count)
         {
             Grow(_position + count);
         }
@@ -172,9 +174,14 @@ public ref struct TextInterpolatedStringHandler
 
     private void Grow(int minimumLength)
     {
-        var buffer = ArrayPool<char>.Shared.Rent(Math.Max(minimumLength, _buffer.Length * 2));
-        _buffer.AsSpan(0, _position).CopyTo(buffer);
-        ArrayPool<char>.Shared.Return(_buffer);
+        var buffer = ArrayPool<char>.Shared.Rent(Math.Max(minimumLength, Capacity * 2));
+
+        if (_buffer != null)
+        {
+            _buffer.AsSpan(0, _position).CopyTo(buffer);
+            ArrayPool<char>.Shared.Return(_buffer);
+        }
+
         _buffer = buffer;
     }
 }

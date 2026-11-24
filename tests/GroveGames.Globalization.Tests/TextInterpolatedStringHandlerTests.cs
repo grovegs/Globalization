@@ -98,6 +98,27 @@ public sealed class TextInterpolatedStringHandlerTests
         Assert.Equal(0, handler.Written.Length);
     }
 
+    [Fact]
+    public void Default_WrittenAndDispose_AreEmptyAndSafe()
+    {
+        var handler = default(TextInterpolatedStringHandler);
+
+        Assert.Equal(0, handler.Written.Length);
+        handler.Dispose();
+    }
+
+    [Fact]
+    public void Default_Append_RentsABuffer()
+    {
+        var handler = default(TextInterpolatedStringHandler);
+
+        handler.AppendLiteral("Stage ");
+        handler.AppendFormatted(7);
+
+        Assert.Equal("Stage 7", handler.Written.ToString());
+        handler.Dispose();
+    }
+
     private static string Format(TextInterpolatedStringHandler text)
     {
         var result = text.Written.ToString();
