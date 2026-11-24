@@ -39,7 +39,7 @@ public ref struct TextInterpolatedStringHandler
         Write(value.AsSpan());
     }
 
-    public void AppendFormatted(ReadOnlySpan<char> value)
+    public void AppendFormatted(scoped ReadOnlySpan<char> value)
     {
         Write(value);
     }
@@ -157,7 +157,7 @@ public ref struct TextInterpolatedStringHandler
     }
 #endif
 
-    private void Write(ReadOnlySpan<char> value)
+    private void Write(scoped ReadOnlySpan<char> value)
     {
         EnsureCapacity(value.Length);
         value.CopyTo(_buffer.AsSpan(_position));
