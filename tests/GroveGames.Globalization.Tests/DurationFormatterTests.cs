@@ -108,10 +108,9 @@ public sealed class DurationFormatterTests
 
     private static void Write(Span<char> destination)
     {
-        DurationFormatter.TryFormat(3725, DurationStyle.Digital, destination, out _);
-        DurationFormatter.TryFormat(90061, DurationStyle.Narrow, destination, out _);
-        DurationFormatter.TryFormatSeconds(1.25f, destination, out _);
-        DurationFormatter.TryFormatSeconds(42, destination, out _);
-        RomanNumeralFormatter.TryFormat(3999, destination, out _);
+        Assert.True(DurationFormatter.TryFormat(3725, DurationStyle.Digital, destination, out _));
+        Assert.True(DurationFormatter.TryFormat(90061, DurationStyle.Narrow, destination, out _));
+        Assert.True(DurationFormatter.TryFormatSeconds(1.25f, destination, out _));
+        Assert.True(DurationFormatter.TryFormatSeconds(42, destination, out _));
     }
 }

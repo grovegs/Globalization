@@ -91,9 +91,7 @@ public sealed class PercentFormatterTests
     {
         var text = PercentFormatter.Format(1e40d);
 
-        Assert.EndsWith("%", text);
-        Assert.DoesNotContain(",", text);
-        Assert.DoesNotContain(" ", text);
+        Assert.Equal("1aj%", text);
     }
 
     [Fact]
@@ -111,9 +109,27 @@ public sealed class PercentFormatterTests
 
     private static void Write(Span<char> destination)
     {
-        PercentFormatter.TryFormat(0.1576d, destination, out _);
-        PercentFormatter.TryFormat(0.05f, destination, out _);
-        PercentFormatter.TryFormat(150d, destination, out _);
-        PercentFormatter.TryFormat(1.9d, 6L, destination, out _);
+        Assert.True(PercentFormatter.TryFormat(0.1576d, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(0.05f, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(150d, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(1.9d, 6L, destination, out _));
+    }
+
+    [Fact]
+    public void Format_FloatThatOverflowsAtOneHundredTimes_WritesACompactPercentage()
+    {
+        var text = PercentFormatter.Format(1e37f);
+
+        Assert.EndsWith("%", text);
+        Assert.DoesNotContain("Infinity", text);
+    }
+
+    [Fact]
+    public void Format_DoubleThatOverflowsAtOneHundredTimes_WritesACompactPercentage()
+    {
+        var text = PercentFormatter.Format(double.MaxValue);
+
+        Assert.EndsWith("%", text);
+        Assert.DoesNotContain("Infinity", text);
     }
 }

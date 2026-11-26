@@ -32,12 +32,26 @@ public static class PercentFormatter
 
     public static bool TryFormat(float value, Span<char> destination, out int charsWritten)
     {
-        return TryFormatPercentage(value * 100f, destination, out charsWritten);
+        var percentage = value * 100f;
+
+        if (float.IsInfinity(percentage) && float.IsFinite(value))
+        {
+            return TryFormat(value, 0L, destination, out charsWritten);
+        }
+
+        return TryFormatPercentage(percentage, destination, out charsWritten);
     }
 
     public static bool TryFormat(double value, Span<char> destination, out int charsWritten)
     {
-        return TryFormatPercentage(value * 100d, destination, out charsWritten);
+        var percentage = value * 100d;
+
+        if (double.IsInfinity(percentage) && double.IsFinite(value))
+        {
+            return TryFormat(value, 0L, destination, out charsWritten);
+        }
+
+        return TryFormatPercentage(percentage, destination, out charsWritten);
     }
 
     public static bool TryFormat(double mantissa, long exponent, Span<char> destination, out int charsWritten)
