@@ -160,4 +160,27 @@ public sealed class TextInterpolatedStringHandlerTests
         text.Dispose();
         return result;
     }
+
+    [Fact]
+    public void Written_AfterWarmUp_DoesNotAllocate()
+    {
+        Write(12, 5L, 1.5f, 2.25d);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Write(12, 5L, 1.5f, 2.25d);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, allocated);
+    }
+
+    private static void Write(int stage, long minutes, float ratio, double total)
+    {
+        Consume($"Reach Stage {stage} in {minutes} minutes, {ratio:0.0} of {total} {'!'}");
+    }
+
+    private static void Consume(TextInterpolatedStringHandler text)
+    {
+        _ = text.Written.Length;
+        text.Dispose();
+    }
 }

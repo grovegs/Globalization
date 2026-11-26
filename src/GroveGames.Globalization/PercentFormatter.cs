@@ -7,7 +7,6 @@ public static class PercentFormatter
 {
     public const int MaxLength = 32;
 
-    private const double MaxWritableHundredths = 1e18d;
     private const long PercentExponent = 2L;
     private const long CompactExponent = 4L;
     private const double CompactThreshold = 10_000d;
@@ -33,12 +32,26 @@ public static class PercentFormatter
 
     public static bool TryFormat(float value, Span<char> destination, out int charsWritten)
     {
-        return TryFormatPercentage(value * 100f, destination, out charsWritten);
+        var percentage = value * 100f;
+
+        if (float.IsInfinity(percentage) && float.IsFinite(value))
+        {
+            return TryFormat(value, 0L, destination, out charsWritten);
+        }
+
+        return TryFormatPercentage(percentage, destination, out charsWritten);
     }
 
     public static bool TryFormat(double value, Span<char> destination, out int charsWritten)
     {
-        return TryFormatPercentage(value * 100d, destination, out charsWritten);
+        var percentage = value * 100d;
+
+        if (double.IsInfinity(percentage) && double.IsFinite(value))
+        {
+            return TryFormat(value, 0L, destination, out charsWritten);
+        }
+
+        return TryFormatPercentage(percentage, destination, out charsWritten);
     }
 
     public static bool TryFormat(double mantissa, long exponent, Span<char> destination, out int charsWritten)
@@ -61,7 +74,7 @@ public static class PercentFormatter
 
         if (percentExponent < CompactExponent && Math.Round(magnitude * Math.Pow(10d, percentExponent), PlainDecimals, MidpointRounding.AwayFromZero) < CompactThreshold)
         {
-            return TryFormat(normalized * Math.Pow(10d, exponent), destination, out charsWritten);
+            return TryFormatPlain(normalized * Math.Pow(10d, exponent) * 100d, destination, out charsWritten);
         }
 
         if (!CompactFormatter.TryFormat(normalized, percentExponent, NumberRounding.Nearest, destination, out var written) || written >= destination.Length)
@@ -77,13 +90,22 @@ public static class PercentFormatter
 
     private static bool TryFormatPercentage(double percentage, Span<char> destination, out int charsWritten)
     {
-        var hundredths = Math.Round(percentage * 100d, MidpointRounding.AwayFromZero);
-
-        if (double.IsNaN(hundredths) || Math.Abs(hundredths) >= MaxWritableHundredths)
+        if (double.IsNaN(percentage) || double.IsInfinity(percentage))
         {
-            return percentage.TryFormat(destination, out charsWritten, "0.##", CultureInfo.InvariantCulture);
+            return percentage.TryFormat(destination, out charsWritten, default, CultureInfo.InvariantCulture);
         }
 
+        if (Math.Abs(Math.Round(percentage, PlainDecimals, MidpointRounding.AwayFromZero)) >= CompactThreshold)
+        {
+            return TryFormat(percentage, -PercentExponent, destination, out charsWritten);
+        }
+
+        return TryFormatPlain(percentage, destination, out charsWritten);
+    }
+
+    private static bool TryFormatPlain(double percentage, Span<char> destination, out int charsWritten)
+    {
+        var hundredths = Math.Round(percentage * 100d, MidpointRounding.AwayFromZero);
         var writer = new FormatWriter(destination);
         var total = (long)hundredths;
 

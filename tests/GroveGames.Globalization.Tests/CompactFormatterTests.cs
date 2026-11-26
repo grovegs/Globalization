@@ -210,6 +210,19 @@ public sealed class CompactFormatterTests
         Assert.Equal(0, charsWritten);
     }
 
+    [Fact]
+    public void TryFormat_AfterWarmUp_DoesNotAllocate()
+    {
+        Span<char> destination = stackalloc char[CompactFormatter.MaxLength];
+        Write(destination);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Write(destination);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, allocated);
+    }
+
     private static string Format(double value)
     {
         return Format(value, NumberRounding.Nearest);
@@ -219,5 +232,13 @@ public sealed class CompactFormatterTests
     {
         Span<char> destination = stackalloc char[CompactFormatter.MaxLength];
         return CompactFormatter.TryFormat(value, rounding, destination, out var charsWritten) ? destination.Slice(0, charsWritten).ToString() : string.Empty;
+    }
+
+    private static void Write(Span<char> destination)
+    {
+        Assert.True(CompactFormatter.TryFormat(999d, NumberRounding.Nearest, destination, out _));
+        Assert.True(CompactFormatter.TryFormat(-12345d, NumberRounding.Floor, destination, out _));
+        Assert.True(CompactFormatter.TryFormat(1e15d, NumberRounding.Ceiling, destination, out _));
+        Assert.True(CompactFormatter.TryFormat(1.5d, 400L, NumberRounding.Nearest, destination, out _));
     }
 }

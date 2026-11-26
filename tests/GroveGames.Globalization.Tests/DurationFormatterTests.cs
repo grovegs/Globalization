@@ -92,4 +92,25 @@ public sealed class DurationFormatterTests
         Assert.True(formatted);
         Assert.Equal(expected, destination.Slice(0, charsWritten).ToString());
     }
+
+    [Fact]
+    public void TryFormat_AfterWarmUp_DoesNotAllocate()
+    {
+        Span<char> destination = stackalloc char[DurationFormatter.MaxLength];
+        Write(destination);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Write(destination);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, allocated);
+    }
+
+    private static void Write(Span<char> destination)
+    {
+        Assert.True(DurationFormatter.TryFormat(3725, DurationStyle.Digital, destination, out _));
+        Assert.True(DurationFormatter.TryFormat(90061, DurationStyle.Narrow, destination, out _));
+        Assert.True(DurationFormatter.TryFormatSeconds(1.25f, destination, out _));
+        Assert.True(DurationFormatter.TryFormatSeconds(42, destination, out _));
+    }
 }

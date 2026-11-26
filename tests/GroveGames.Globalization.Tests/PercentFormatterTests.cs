@@ -53,6 +53,9 @@ public sealed class PercentFormatterTests
     [InlineData(0.05d, "5%")]
     [InlineData(0.1576d, "15.76%")]
     [InlineData(1.5d, "150%")]
+    [InlineData(99.9999d, "9999.99%")]
+    [InlineData(150d, "15K%")]
+    [InlineData(-150d, "-15K%")]
     [InlineData(-0.05d, "-5%")]
     public void TryFormat_Fraction_WritesThePercentage(double value, string expected)
     {
@@ -62,5 +65,71 @@ public sealed class PercentFormatterTests
 
         Assert.True(formatted);
         Assert.Equal(expected, destination.Slice(0, charsWritten).ToString());
+    }
+
+    [Theory]
+    [InlineData(150d, 1.5d, 2L)]
+    [InlineData(99.99996d, 9.999996d, 1L)]
+    [InlineData(-150d, -1.5d, 2L)]
+    [InlineData(1e16d, 1d, 16L)]
+    [InlineData(1e40d, 1d, 40L)]
+    public void TryFormat_FractionOfTenThousandPercentOrMore_MatchesTheMantissaForm(double value, double mantissa, long exponent)
+    {
+        Span<char> fraction = stackalloc char[PercentFormatter.MaxLength];
+        Span<char> mantissaForm = stackalloc char[PercentFormatter.MaxLength];
+
+        var fractionFormatted = PercentFormatter.TryFormat(value, fraction, out var fractionWritten);
+        var mantissaFormatted = PercentFormatter.TryFormat(mantissa, exponent, mantissaForm, out var mantissaWritten);
+
+        Assert.True(fractionFormatted);
+        Assert.True(mantissaFormatted);
+        Assert.Equal(mantissaForm.Slice(0, mantissaWritten).ToString(), fraction.Slice(0, fractionWritten).ToString());
+    }
+
+    [Fact]
+    public void Format_HugeFraction_WritesACompactPercentage()
+    {
+        var text = PercentFormatter.Format(1e40d);
+
+        Assert.Equal("1aj%", text);
+    }
+
+    [Fact]
+    public void TryFormat_AfterWarmUp_DoesNotAllocate()
+    {
+        Span<char> destination = stackalloc char[PercentFormatter.MaxLength];
+        Write(destination);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Write(destination);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, allocated);
+    }
+
+    private static void Write(Span<char> destination)
+    {
+        Assert.True(PercentFormatter.TryFormat(0.1576d, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(0.05f, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(150d, destination, out _));
+        Assert.True(PercentFormatter.TryFormat(1.9d, 6L, destination, out _));
+    }
+
+    [Fact]
+    public void Format_FloatThatOverflowsAtOneHundredTimes_WritesACompactPercentage()
+    {
+        var text = PercentFormatter.Format(1e37f);
+
+        Assert.EndsWith("%", text);
+        Assert.DoesNotContain("Infinity", text);
+    }
+
+    [Fact]
+    public void Format_DoubleThatOverflowsAtOneHundredTimes_WritesACompactPercentage()
+    {
+        var text = PercentFormatter.Format(double.MaxValue);
+
+        Assert.EndsWith("%", text);
+        Assert.DoesNotContain("Infinity", text);
     }
 }
