@@ -10,7 +10,7 @@ Compact numbers, percentages, durations and Roman numerals formatted without all
 ## Features
 
 - `CompactFormatter`: `12345` becomes `12.3K`, with `K`, `M`, `B`, `T` and then letter suffixes such as `aa`
-- `PercentFormatter`: a fraction becomes a percentage with up to two decimals
+- `PercentFormatter`: a fraction becomes a percentage with up to two decimals, and from 10,000% on a compact one such as `15K%`
 - `DurationFormatter`: seconds become `01:02:05` or `1m 30s`
 - `RomanNumeralFormatter`: integers become Roman numerals
 - Every formatter has a `TryFormat` that writes into a `Span<char>` and a `Format` that returns a string
