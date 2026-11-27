@@ -132,4 +132,45 @@ public sealed class PercentFormatterTests
         Assert.EndsWith("%", text);
         Assert.DoesNotContain("Infinity", text);
     }
+
+    [Theory]
+    [InlineData(0.04525d, "4.53%")]
+    [InlineData(0.00035d, "0.04%")]
+    [InlineData(1.62455d, "162.46%")]
+    [InlineData(0.29745d, "29.75%")]
+    [InlineData(99.99995d, "10K%")]
+    public void Format_DoubleAtAMidpoint_RoundsAwayFromZero(double value, string expected)
+    {
+        var text = PercentFormatter.Format(value);
+
+        Assert.Equal(expected, text);
+    }
+
+    [Fact]
+    public void TryFormat_MantissaAtAMidpoint_MatchesTheDouble()
+    {
+        Span<char> buffer = stackalloc char[PercentFormatter.MaxLength];
+
+        PercentFormatter.TryFormat(4.525d, -2L, buffer, out var written);
+
+        Assert.Equal(PercentFormatter.Format(0.04525d), buffer.Slice(0, written).ToString());
+    }
+
+    [Fact]
+    public void Format_Float_MatchesTheDouble()
+    {
+        var value = 5.34555f;
+
+        var text = PercentFormatter.Format(value);
+
+        Assert.Equal(PercentFormatter.Format((double)value), text);
+    }
+
+    [Fact]
+    public void Format_Long_KeepsEveryDigit()
+    {
+        var text = PercentFormatter.Format(123_456_789L);
+
+        Assert.Equal(PercentFormatter.Format(123_456_789d), text);
+    }
 }

@@ -113,4 +113,20 @@ public sealed class DurationFormatterTests
         Assert.True(DurationFormatter.TryFormatSeconds(1.25f, destination, out _));
         Assert.True(DurationFormatter.TryFormatSeconds(42, destination, out _));
     }
+
+    [Fact]
+    public void FormatSeconds_FloatBeyondTwoHundredFortyEightDays_WritesTheSeconds()
+    {
+        var text = DurationFormatter.FormatSeconds(3e7f);
+
+        Assert.Equal("30000000s", text);
+    }
+
+    [Fact]
+    public void FormatSeconds_Long_MatchesTheInt()
+    {
+        var text = DurationFormatter.FormatSeconds(30_000_000L);
+
+        Assert.Equal(DurationFormatter.FormatSeconds(30_000_000), text);
+    }
 }

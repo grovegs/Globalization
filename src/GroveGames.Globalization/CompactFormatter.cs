@@ -28,6 +28,11 @@ public static class CompactFormatter
         return Format((double)value, rounding);
     }
 
+    public static string Format(long value, NumberRounding rounding)
+    {
+        return Format((double)value, rounding);
+    }
+
     public static string Format(float value, NumberRounding rounding)
     {
         return Format((double)value, rounding);
@@ -102,14 +107,14 @@ public static class CompactFormatter
         var group = exponent / GroupDigits;
         var scaled = magnitude * s_scales[(int)(exponent - group * GroupDigits) + 3];
         var decimals = GetDecimals(scaled, CompactDigits, CompactDigits - 1);
-        var units = Round(scaled, decimals, magnitudeRounding);
+        var units = RoundToUnits(scaled, decimals, magnitudeRounding);
 
         if (units >= CompactLimit * s_powersOfTen[decimals])
         {
             group++;
             scaled *= s_scales[0];
             decimals = GetDecimals(scaled, CompactDigits, CompactDigits - 1);
-            units = Round(scaled, decimals, magnitudeRounding);
+            units = RoundToUnits(scaled, decimals, magnitudeRounding);
         }
 
         if (negative)
@@ -130,7 +135,7 @@ public static class CompactFormatter
 
     private static bool TryWritePlain(ref FormatWriter writer, bool negative, double magnitude, NumberRounding rounding)
     {
-        var units = Round(magnitude, 0, rounding);
+        var units = RoundToUnits(magnitude, 0, rounding);
 
         if (units >= CompactThreshold)
         {
@@ -228,7 +233,7 @@ public static class CompactFormatter
         };
     }
 
-    private static double Round(double value, int decimals, NumberRounding rounding)
+    internal static double RoundToUnits(double value, int decimals, NumberRounding rounding)
     {
         var units = value * s_powersOfTen[decimals];
 
