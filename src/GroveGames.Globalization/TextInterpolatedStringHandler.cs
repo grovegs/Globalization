@@ -123,7 +123,30 @@ public ref struct TextInterpolatedStringHandler
         _position += written;
     }
 
+    public void AppendFormatted(bool value)
+    {
+        int written;
+
+        while (!value.TryFormat(_buffer.AsSpan(_position), out written))
+        {
+            Grow(Capacity + 1);
+        }
+
+        _position += written;
+    }
+
 #if NET6_0_OR_GREATER
+    public void AppendFormatted(object? value)
+    {
+        AppendFormatted(value, null);
+    }
+
+    public void AppendFormatted(object? value, string? format)
+    {
+        var text = value is IFormattable formattable ? formattable.ToString(format, CultureInfo.InvariantCulture) : value?.ToString();
+        Write(text.AsSpan());
+    }
+
     public void AppendFormatted<T>(T value) where T : ISpanFormattable
     {
         AppendFormatted(value, null);

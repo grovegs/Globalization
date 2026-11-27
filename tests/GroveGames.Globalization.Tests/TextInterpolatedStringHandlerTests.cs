@@ -154,6 +154,18 @@ public sealed class TextInterpolatedStringHandlerTests
         handler.Dispose();
     }
 
+    [Fact]
+    public void Written_BoolObjectAndNullable_WritesThem()
+    {
+        var flag = true;
+        object boxed = 3;
+        int? count = 4;
+
+        var text = Format($"{flag} {boxed} {count}");
+
+        Assert.Equal("True 3 4", text);
+    }
+
     private static string Format(TextInterpolatedStringHandler text)
     {
         var result = text.Written.ToString();

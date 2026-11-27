@@ -11,6 +11,7 @@ public static class DurationFormatter
     private const int Day = Hour * 24;
     private const int Tenths = 10;
     private const int Hundredths = 100;
+    private const double MaxHundredths = (double)int.MaxValue * Hundredths;
 
     public static string Format(float seconds, DurationStyle style)
     {
@@ -20,6 +21,11 @@ public static class DurationFormatter
     public static string Format(double seconds, DurationStyle style)
     {
         return Format(ToSeconds(Math.Truncate(seconds)), style);
+    }
+
+    public static string Format(long seconds, DurationStyle style)
+    {
+        return Format(ToSeconds(seconds), style);
     }
 
     public static string Format(int seconds, DurationStyle style)
@@ -66,6 +72,11 @@ public static class DurationFormatter
         return new string(buffer.Slice(0, written));
     }
 
+    public static string FormatSeconds(long seconds)
+    {
+        return FormatSeconds(ToSeconds(seconds));
+    }
+
     public static string FormatSeconds(int seconds)
     {
         Span<char> buffer = stackalloc char[MaxLength];
@@ -81,9 +92,15 @@ public static class DurationFormatter
         return writer.Complete(out charsWritten);
     }
 
+    public static bool TryFormatSeconds(long seconds, Span<char> destination, out int charsWritten)
+    {
+        return TryFormatSeconds(ToSeconds(seconds), destination, out charsWritten);
+    }
+
     public static bool TryFormatSeconds(float seconds, Span<char> destination, out int charsWritten)
     {
-        var hundredths = (long)ToSeconds(Math.Round((double)seconds * Hundredths, MidpointRounding.AwayFromZero));
+        var rounded = Math.Round((double)seconds * Hundredths, MidpointRounding.AwayFromZero);
+        var hundredths = double.IsNaN(rounded) || rounded <= 0d ? 0L : rounded >= MaxHundredths ? (long)MaxHundredths : (long)rounded;
         var fraction = hundredths % Hundredths;
         var writer = new FormatWriter(destination);
         writer.Write(hundredths / Hundredths);

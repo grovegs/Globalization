@@ -223,6 +223,14 @@ public sealed class CompactFormatterTests
         Assert.Equal(0, allocated);
     }
 
+    [Fact]
+    public void Format_Long_KeepsEveryDigit()
+    {
+        var text = CompactFormatter.Format(1_999_999_999L, NumberRounding.Floor);
+
+        Assert.Equal("1.99B", text);
+    }
+
     private static string Format(double value)
     {
         return Format(value, NumberRounding.Nearest);

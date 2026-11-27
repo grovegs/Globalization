@@ -51,7 +51,7 @@ public void SetText(TextInterpolatedStringHandler text)
 label.SetText($"Reach Stage {stage}");
 ```
 
-`int`, `long`, `float`, `double`, `char`, strings and spans are written without allocating on every target. Other values are written without allocating on .NET 6 and later, and through `ToString` on `netstandard2.1`.
+`int`, `long`, `float`, `double`, `bool`, `char`, strings and spans are written without allocating on every target. On .NET 6 and later, other values that implement `ISpanFormattable` are written without allocating, except enums, which box, and any other value, such as a nullable or an `object`, is written through `ToString`. On `netstandard2.1` every other value is written through `ToString`.
 
 `CompactFormatter` and `PercentFormatter` also take a mantissa and a base-ten exponent, for values beyond the range of `double`:
 
@@ -60,7 +60,7 @@ CompactFormatter.TryFormat(1.5d, 400L, NumberRounding.Nearest, buffer, out writt
 PercentFormatter.TryFormat(1.9d, 6L, buffer, out written);
 ```
 
-The output does not depend on the current culture. `TryFormat` returns `false` when the destination is too small; a buffer of the formatter's `MaxLength` always fits.
+The output does not depend on the current culture. `TryFormat` returns `false` when the destination is too small, or when a mantissa's exponent is out of range; a buffer of the formatter's `MaxLength` always fits. `CompactFormatter`, `PercentFormatter` and `DurationFormatter` take a `long` wherever they take a `float`, so a `long` keeps every digit instead of converting to `float`.
 
 ## Unity
 
