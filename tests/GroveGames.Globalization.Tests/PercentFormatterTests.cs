@@ -173,4 +173,14 @@ public sealed class PercentFormatterTests
 
         Assert.Equal(PercentFormatter.Format(123_456_789d), text);
     }
+
+    [Fact]
+    public void TryFormat_Long_MatchesFormat()
+    {
+        Span<char> buffer = stackalloc char[PercentFormatter.MaxLength];
+
+        PercentFormatter.TryFormat(99_949_999L, buffer, out var written);
+
+        Assert.Equal(PercentFormatter.Format(99_949_999L), buffer.Slice(0, written).ToString());
+    }
 }

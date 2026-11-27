@@ -35,6 +35,11 @@ public static class PercentFormatter
         return TryFormat(value, buffer, out var written) ? new string(buffer.Slice(0, written)) : value.ToString("P2", CultureInfo.InvariantCulture);
     }
 
+    public static bool TryFormat(long value, Span<char> destination, out int charsWritten)
+    {
+        return TryFormat((double)value, destination, out charsWritten);
+    }
+
     public static bool TryFormat(float value, Span<char> destination, out int charsWritten)
     {
         return TryFormat((double)value, destination, out charsWritten);

@@ -92,6 +92,11 @@ public static class DurationFormatter
         return writer.Complete(out charsWritten);
     }
 
+    public static bool TryFormatSeconds(long seconds, Span<char> destination, out int charsWritten)
+    {
+        return TryFormatSeconds(ToSeconds(seconds), destination, out charsWritten);
+    }
+
     public static bool TryFormatSeconds(float seconds, Span<char> destination, out int charsWritten)
     {
         var rounded = Math.Round((double)seconds * Hundredths, MidpointRounding.AwayFromZero);

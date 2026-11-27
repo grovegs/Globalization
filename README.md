@@ -60,7 +60,7 @@ CompactFormatter.TryFormat(1.5d, 400L, NumberRounding.Nearest, buffer, out writt
 PercentFormatter.TryFormat(1.9d, 6L, buffer, out written);
 ```
 
-The output does not depend on the current culture. `TryFormat` returns `false` when the destination is too small, or when a mantissa's exponent is out of range; a buffer of the formatter's `MaxLength` always fits. Each formatter has a `long` overload, so a `long` keeps every digit instead of converting to `float`.
+The output does not depend on the current culture. `TryFormat` returns `false` when the destination is too small, or when a mantissa's exponent is out of range; a buffer of the formatter's `MaxLength` always fits. `CompactFormatter`, `PercentFormatter` and `DurationFormatter` take a `long` wherever they take a `float`, so a `long` keeps every digit instead of converting to `float`.
 
 ## Unity
 

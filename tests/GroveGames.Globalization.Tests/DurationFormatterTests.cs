@@ -129,4 +129,14 @@ public sealed class DurationFormatterTests
 
         Assert.Equal(DurationFormatter.FormatSeconds(30_000_000), text);
     }
+
+    [Fact]
+    public void TryFormatSeconds_Long_KeepsEveryDigit()
+    {
+        Span<char> buffer = stackalloc char[DurationFormatter.MaxLength];
+
+        DurationFormatter.TryFormatSeconds(16_777_217L, buffer, out var written);
+
+        Assert.Equal("16777217s", buffer.Slice(0, written).ToString());
+    }
 }
